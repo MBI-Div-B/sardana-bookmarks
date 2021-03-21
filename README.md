@@ -4,7 +4,7 @@ Simple bookmark manager macro for Sardana/ spock
 
 This is a simple bookmark manager for Sardana/ spock. It can save a list of motor positions under a user-specified name. This (collective) position can then be recalled with the "goto" command.
 
-TO AVOID COLLISIONS, THE MOTORS ARE DRIVEN IN THE ORDER SPECIFIED!
+**To avoid collisions, the motors are driven in the order specified!**
 
 Usage:
 
