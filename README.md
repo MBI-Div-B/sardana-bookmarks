@@ -6,6 +6,14 @@ This is a simple bookmark manager for Sardana/ spock. It can save a list of moto
 
 TO AVOID COLLISIONS, THE MOTORS ARE DRIVEN IN THE ORDER SPECIFIED!
 
+Usage: `bm <cmd> [<name>] [<motors>]`
+
+Example:
+`bm list`
+`bm save sample1 motor1 motor2 motor3`
+`bm goto sample1`
+
+
 ## Commands
 
 ### list
