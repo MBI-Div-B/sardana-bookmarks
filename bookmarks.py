@@ -2,6 +2,8 @@
 """
 Simple Sardana/ spock bookmarks
 
+https://github.com/MBI-Div-B/sardana-bookmarks.git
+
 @author: Michael Schneider, MBI Berlin
 """
 
@@ -11,10 +13,39 @@ import json
 
 
 class bm(Macro):
+    '''A simple bookmark manager for Sardana/ spock.
+    
+    Usage: bm <cmd> [name] [motors]
+    
+    This macro saves a list of motor positions under a user-specified name.
+    This (collective) position can then be recalled with the "goto" command.
+    
+    TO AVOID COLLISIONS, THE MOTORS ARE DRIVEN IN THE ORDER SPECIFIED!
+    
+    commands: 
+        list:
+            list currently saved bookmarks
+            
+        save <name> <motors>:
+            save current positions of [motors] under <name>, ORDER MATTERS!
+            
+        remove <name>:
+            remove bookmark <name>
+            
+        goto <name>:
+            drive motors specified in bookmark <name> to their saved positions
+            
+        export <filename>:
+            save currently defined bookmarks to json file
+            
+        import <filename>:
+            load bookmarks from file
+
+    '''
     
     param_def = [
         ['command', Type.String, Optional,
-         'Command [list, goto, save, remove, to_file, from_file]'],
+         'Command [list, goto, save, remove, export, import]'],
         ['name', Type.String, Optional,
          'bookmark name'],
         ['motors', [['motor', Type.Moveable, Optional, 'motor']], Optional,
@@ -22,36 +53,6 @@ class bm(Macro):
     ]
     
     interactive = True
-    
-    __usage = '''Usage: bm <cmd> [name] [motors]
-    
-This is a simple bookmark manager for Sardana/ spock. It can save a list of
-motor positions under a user-specified name. This (collective) position
-can then be recalled with the "goto" command.
-
-TO AVOID COLLISIONS, THE MOTORS ARE DRIVEN IN THE ORDER SPECIFIED!
-
-commands: 
-    list:
-        list currently saved bookmarks
-        
-    save <name> <motors>:
-        save current positions of [motors] under <name>, ORDER MATTERS!
-        
-    remove <name>:
-        remove bookmark <name>
-        
-    goto <name>:
-        drive motors specified in bookmark <name> to their saved positions
-        
-    to_file <filename>:
-        save currently defined bookmarks to json file
-        
-    from_file <filename>:
-        load bookmarks from file
-
-    '''
-    
         
     def run(self, *args):
         cmd, name, motors = args
@@ -64,12 +65,12 @@ commands:
             self.cmd_remove(name)
         elif cmd == 'goto':
             self.cmd_goto(name)
-        elif cmd == 'to_file':
-            self.cmd_to_file(name)
-        elif cmd == 'from_file':
-            self.cmd_from_file(name)
+        elif cmd == 'export':
+            self.cmd_export(name)
+        elif cmd == 'import':
+            self.cmd_import(name)
         else:
-            self.output(self.__usage)
+            self.output(self.__doc__)
 
     def cmd_list(self):
         '''List currently defined bookmarks'''
@@ -114,14 +115,14 @@ commands:
         except KeyError:
             self.output(f'{name} is not a defined bookmark.')
     
-    def cmd_to_file(self, fname):
+    def cmd_export(self, fname):
         if not fname.endswith('.json'):
             fname += '.json'
         with open(fname, 'w') as f:
             json.dump(self.bm, f)
         self.output(f'Saved bookmarks to file {fname}.')
     
-    def cmd_from_file(self, fname):
+    def cmd_import(self, fname):
         with open(fname, 'r') as f:
             bm = json.load(f)
         self.bm.update(bm)
