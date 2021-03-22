@@ -10,12 +10,14 @@ Usage:
 
 `bm <cmd> [<name>] [<motors>]`
 
+Available commands are: `list`, `save`, `goto`, `remove`, `export`, `import`
+
 Examples:
 * `bm list`
 * `bm save sample1 motor1 motor2 motor3`
 * `bm goto sample1`
 * `bm remove sample1`
-* `bm to_file bookmarks.json`
+* `bm export bookmarks.json`
 
 
 ```
@@ -58,21 +60,7 @@ Type "yes" to proceed: yes
    23.9987
 
 
-p04/door/haspp04max.01 [15]: bm to_file bookmarks.json
+p04/door/haspp04max.01 [15]: bm export bookmarks.json
 Saved bookmarks to file bookmarks.json.
 ```
 
-## Commands
-
-### list
-list currently saved bookmarks
-### save *name motors*
-save current positions of `motors` under `name`, ORDER MATTERS!
-### remove *name*
-remove bookmark `name`
-### goto *name*
-drive motors specified in bookmark `name` to their saved positions
-### to_file *filename*
-save currently defined bookmarks to json file
-### from_file *filename*
-load bookmarks from file
