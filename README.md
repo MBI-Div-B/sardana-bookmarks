@@ -2,15 +2,15 @@
 Simple bookmark manager macro for Sardana/ spock
 
 
-This is a simple bookmark manager for Sardana/ spock. It can save a list of motor positions under a user-specified name. This (collective) position can then be recalled with the "goto" command.
+This is a simple bookmark manager for Sardana/ spock. It can save a list of motor positions under a user-specified name. This (collective) position can then be recalled with the "goto" command (moving motors sequentially) or the "pgoto" command (parallel movement.
 
-**To avoid collisions, the motors are driven in the order specified!**
+The command to be used for moving the motors is configurable, default is `umv`.
 
 Usage:
 
 `bm <cmd> [<name>] [<motors>]`
 
-Available commands are: `list`, `save`, `goto`, `remove`, `export`, `import`
+Available commands are: `list`, `save`, `goto`, `pgoto`, `remove`, `export`, `import`, `mv_cmd`
 
 Examples:
 * `bm list`
