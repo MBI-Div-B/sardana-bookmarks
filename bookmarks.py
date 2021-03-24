@@ -18,28 +18,35 @@ class bm(Macro):
     Usage: bm <cmd> [name] [motors]
     
     This macro saves a list of motor positions under a user-specified name.
-    This (collective) position can then be recalled with the "goto" command.
-    
-    TO AVOID COLLISIONS, THE MOTORS ARE DRIVEN IN THE ORDER SPECIFIED!
+    This (collective) position can then be recalled with the "goto" or "pgoto"
+    command (see below).
     
     commands: 
         list:
             list currently saved bookmarks
             
         save <name> <motors>:
-            save current positions of [motors] under <name>, ORDER MATTERS!
+            save current positions of [motors] under <name>, order matters!
             
         remove <name>:
             remove bookmark <name>
             
         goto <name>:
-            drive motors specified in bookmark <name> to their saved positions
+            sequentially drive motors specified in bookmark <name> to their
+            saved positions
+        
+        pgoto <name>:
+            simultaneously drive motors specified in bookmark <name> to their
+            saved positions
             
         export <filename>:
             save currently defined bookmarks to json file
             
         import <filename>:
             load bookmarks from file
+        
+        mv_cmd <cmd>:
+            set macro name to use for motor movement (default: umv)
 
     '''
     
@@ -54,8 +61,7 @@ class bm(Macro):
     
     interactive = True
         
-    def run(self, *args):
-        cmd, name, motors = args
+    def run(self, cmd, name, motors):
         self.load_from_env()
         if cmd == 'list':
             self.cmd_list()
@@ -64,25 +70,30 @@ class bm(Macro):
         elif cmd == 'remove':
             self.cmd_remove(name)
         elif cmd == 'goto':
-            self.cmd_goto(name)
+            self.cmd_goto(name, parallel=False)
+        elif cmd == 'pgoto':
+            self.cmd_goto(name, parallel=True)
         elif cmd == 'export':
             self.cmd_export(name)
         elif cmd == 'import':
             self.cmd_import(name)
+        elif cmd == 'mv_cmd':
+            self.cmd_set_mv_cmd(name)
         else:
             self.output(self.__doc__)
 
     def cmd_list(self):
         '''List currently defined bookmarks'''
-        if len(self.bm) > 0:
+        if len(self.bm['bookmarks']) > 0:
             self.output('List of bookmarked positions:\n')
-            w = max([len(k) for k in self.bm.keys()])
-            for name, motorlist in self.bm.items():
+            w = max([len(k) for k in self.bm['bookmarks'].keys()])
+            for name, motorlist in self.bm['bookmarks'].items():
                 fill = len(name) * '='
                 self.output(f'{name}\n{fill}')
                 self.print_bm(motorlist, w)
         else:
             self.output('No positions bookmarked!')
+        self.output(f'move command used: {self.bm["mv_cmd"]}\n')
     
     def cmd_save(self, name, motors):
         '''Add a named bookmark for current position(s) of given motor(s).'''
@@ -90,19 +101,28 @@ class bm(Macro):
         for motor in motors:
             new_bm.append(dict(name=motor.getName(),
                                position=motor.getPosition()))
-        if name in self.bm:
+        if name in self.bm['bookmarks']:
             self.output(f'Updating existing bookmark {name}')
-        self.bm.update({name: new_bm})
+        self.bm['bookmarks'].update({name: new_bm})
     
-    def cmd_goto(self, name):
+    def cmd_goto(self, name, parallel=False):
         try:
-            bookmark = self.bm[name]
-            self.output(f'Moving to bookmark {name}:')
+            bookmark = self.bm['bookmarks'][name]
+            mode = 'parallel' if parallel else 'sequential'
+            mv_cmd = self.bm['mv_cmd']
+            self.output(f'Moving to bookmark {name} in {mode} movement:')
             self.print_bm(bookmark, show_current=True)
             ans = self.input('Type "yes" to proceed: ')
             if ans == 'yes':
-                for i, m in enumerate(bookmark):
-                    self.execMacro(['umv', m['name'], m['position']])
+                if parallel:
+                    mv_arg = []
+                    for m in bookmark:
+                        mv_arg.append(m['name'])
+                        mv_arg.append(m['position'])
+                    self.execMacro([mv_cmd] + mv_arg)
+                else:
+                    for m in bookmark:
+                        self.execMacro([mv_cmd, m['name'], m['position']])
             else:
                 self.output('Aborted')
         except KeyError:
@@ -110,7 +130,7 @@ class bm(Macro):
     
     def cmd_remove(self, name):
         try:
-            self.bm.pop(name)
+            self.bm['bookmarks'].pop(name)
             self.output(f'Removed bookmark {name}.')
         except KeyError:
             self.output(f'{name} is not a defined bookmark.')
@@ -120,12 +140,15 @@ class bm(Macro):
             fname += '.json'
         with open(fname, 'w') as f:
             json.dump(self.bm, f)
-        self.output(f'Saved bookmarks to file {fname}.')
+        self.output(f'Saved bookmarks to file {fname}')
     
     def cmd_import(self, fname):
         with open(fname, 'r') as f:
             bm = json.load(f)
         self.bm.update(bm)
+    
+    def cmd_set_mv_cmd(self, cmd):
+        self.bm['mv_cmd'] = cmd
     
     def print_bm(self, bookmark, w=12, show_current=False):
         for i, m in enumerate(bookmark):
@@ -144,5 +167,5 @@ class bm(Macro):
             self.bm = self.getEnv('_Bookmarks')
         except UnknownEnv:
             self.output('No bookmarks defined in environment. Creating empty.')
-            self.bm = {}
+            self.bm = dict(mv_cmd='umv', bookmarks={})
             self.setEnv('_Bookmarks', self.bm)
