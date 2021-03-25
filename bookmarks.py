@@ -106,10 +106,10 @@ class bm(Macro):
             bookmark = self.bm['bookmarks'][name]
             mode = 'parallel' if parallel else 'sequential'
             mv_cmd = self.bm['mv_cmd']
-            self.output(f'Moving to bookmark {name} in {mode} movement:')
+            self.output(f'{mode} movement to bookmark {name}')
             self.print_bm(bookmark, show_current=True)
-            ans = self.input('Type "yes" to proceed: ')
-            if ans == 'yes':
+            ans = self.input('Proceed (Y/n)?')
+            if ans.lower() != 'n':
                 if parallel:
                     mv_arg = []
                     for m in bookmark:
