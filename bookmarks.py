@@ -144,7 +144,12 @@ class bm(Macro):
         self.bm.update(bm)
 
     def cmd_set_mv_cmd(self, cmd):
-        self.bm['mv_cmd'] = cmd
+        if cmd in self.getMacroNames():
+            self.bm['mv_cmd'] = cmd
+        else:
+            self.warning(f'{cmd} is not a macro')
+        self.info(f'move command is {self.bm["mv_cmd"]}')
+
 
     def print_bm(self, bookmark, w=12, show_current=False):
         for i, m in enumerate(bookmark):
