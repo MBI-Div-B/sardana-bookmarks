@@ -127,21 +127,25 @@ class bm(Macro):
     def cmd_remove(self, name):
         try:
             self.bm['bookmarks'].pop(name)
-            self.output(f'Removed bookmark {name}.')
+            self.info(f'Removed bookmark {name}.')
         except KeyError:
-            self.output(f'{name} is not a defined bookmark.')
+            self.info(f'{name} is not a defined bookmark.')
 
     def cmd_export(self, fname):
         if not fname.endswith('.json'):
             fname += '.json'
         with open(fname, 'w') as f:
             json.dump(self.bm, f)
-        self.output(f'Saved bookmarks to file {fname}')
+        self.info(f'Saved bookmarks to {fname}')
 
     def cmd_import(self, fname):
-        with open(fname, 'r') as f:
-            bm = json.load(f)
-        self.bm.update(bm)
+        try:
+            with open(fname, 'r') as f:
+                bm = json.load(f)
+            self.bm.update(bm)
+            self.info(f'Loaded bookmarks from {fname}')
+        except FileNotFoundError:
+            self.warning(f'{fname} not found')
 
     def cmd_set_mv_cmd(self, cmd):
         if cmd in self.getMacroNames():
