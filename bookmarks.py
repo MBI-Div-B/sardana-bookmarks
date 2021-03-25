@@ -8,8 +8,11 @@ https://github.com/MBI-Div-B/sardana-bookmarks.git
 """
 
 
-from sardana.macroserver.macro import Macro, Type, Optional, UnknownEnv
 import json
+import re
+from sardana.macroserver.macro import Macro, Type, Optional, UnknownEnv
+from taurus.console import Alignment
+from taurus.console.list import List
 
 
 class bm(Macro):
@@ -52,7 +55,7 @@ class bm(Macro):
         ['command', Type.String, None,
          'Command [list, goto, save, remove, export, import]'],
         ['name', Type.String, Optional,
-         'bookmark name'],
+         'name of bookmark, or file, or macro (depends on command)'],
         ['motors', [['motor', Type.Moveable, Optional, 'motor']], Optional,
          'List of motors'],
     ]
@@ -62,7 +65,8 @@ class bm(Macro):
     def run(self, cmd, name, motors):
         self.load_from_env()
         if cmd == 'list':
-            self.cmd_list()
+            filter = name if name is not None else '.*'
+            self.cmd_list(filter=filter, show_current=False)
         elif cmd == 'save':
             self.cmd_save(name, motors)
         elif cmd == 'remove':
@@ -77,19 +81,6 @@ class bm(Macro):
             self.cmd_import(name)
         elif cmd == 'mv_cmd':
             self.cmd_set_mv_cmd(name)
-
-    def cmd_list(self):
-        '''List currently defined bookmarks'''
-        if len(self.bm['bookmarks']) > 0:
-            self.output('List of bookmarked positions:\n')
-            w = max([len(k) for k in self.bm['bookmarks'].keys()])
-            for name, motorlist in self.bm['bookmarks'].items():
-                fill = len(name) * '='
-                self.output(f'{name}\n{fill}')
-                self.print_bm(motorlist, w)
-        else:
-            self.output('No positions bookmarked!')
-        self.output(f'move command used: {self.bm["mv_cmd"]}\n')
 
     def cmd_save(self, name, motors):
         '''Add a named bookmark for current position(s) of given motor(s).'''
@@ -106,9 +97,9 @@ class bm(Macro):
             bookmark = self.bm['bookmarks'][name]
             mode = 'parallel' if parallel else 'sequential'
             mv_cmd = self.bm['mv_cmd']
-            self.output(f'{mode} movement to bookmark {name}')
-            self.print_bm(bookmark, show_current=True)
-            ans = self.input('Proceed (Y/n)?', default_value='y')
+            self.output(f'{mode} movement to bookmark {name}\n')
+            self.cmd_list(filter=name, show_current=True)
+            ans = self.input('\nProceed (Y/n)?', default_value='y')
             if ans.lower() == 'y':
                 if parallel:
                     mv_arg = []
@@ -155,16 +146,35 @@ class bm(Macro):
             self.warning(f'{cmd} is not a macro')
         self.info(f'move command is {self.bm["mv_cmd"]}')
 
-    def print_bm(self, bookmark, w=12, show_current=False):
-        for i, m in enumerate(bookmark):
-            name, target = m['name'], m['position']
-            if show_current:
-                mov = self.getMoveable(name)
-                curr = str(mov.getPosition())
-            else:
-                curr = ''
-            self.output(f"  {i + 1}. {name:{w}s} {curr} --> {target}")
-        self.output('\n')
+    def cmd_list(self, filter='.*', show_current=False):
+        '''Print a list defined bookmarks.
+
+        Shows only bookmarks with names matching the filter regex
+        Optionally shows current positions of affected motors.
+        '''
+        bm_filter = {k: v for k, v in self.bm['bookmarks'].items()
+                     if re.match(filter, k)}
+        ncols = max([len(ml) for ml in bm_filter.values()])
+        cols = ['name']
+        if show_current:
+            cols += ncols * ['Motor', 'current', 'target']
+        else:
+            cols += ncols * ['Motor', 'target']
+        align = Alignment.Right * len(cols)
+        out = List(cols, text_alignment=align)
+
+        for bm_name, motorlist in bm_filter.items():
+            row = [bm_name]
+            for m in motorlist:
+                row.append(m['name'])
+                if show_current:
+                    mot = self.getMoveable(m['name'])
+                    row.append(mot.getPosition())
+                row.append(m['position'])
+            out.appendRow(row)
+        for line in out.genOutput():
+            self.output(line)
+        self.output('\nmove command is ' + self.bm['mv_cmd'])
 
     def load_from_env(self):
         '''Loads a dictionary of bookmarks from environment'''
