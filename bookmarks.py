@@ -119,6 +119,7 @@ class bm(Macro):
                 else:
                     for m in bookmark:
                         self.execMacro([mv_cmd, m['name'], m['position']])
+                        self.output('')  # avoids output being overwritten
             else:
                 self.output('Aborted')
         except KeyError:
@@ -153,7 +154,6 @@ class bm(Macro):
         else:
             self.warning(f'{cmd} is not a macro')
         self.info(f'move command is {self.bm["mv_cmd"]}')
-
 
     def print_bm(self, bookmark, w=12, show_current=False):
         for i, m in enumerate(bookmark):
