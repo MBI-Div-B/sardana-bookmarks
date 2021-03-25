@@ -29,6 +29,20 @@ Available commands are: `list`, `save`, `goto`, `pgoto`, `remove`, `export`, `im
 move command is umv
 ```
 
+Optionally a regex can be provided to filter the bookmark list
+
+`bm list pos.`
+
+```
+   name   Motor   target   Motor   target   Motor   target
+ ------ ------- -------- ------- -------- ------- --------
+   pos1   mot01      0.0   mot02      0.0
+   pos2   mot01      5.0   mot02     -4.0   mot03      0.0
+   pos3   mot01     10.0   mot02     -4.0   mot03     10.0
+
+move command is umv
+```
+
 ### Save current position of selected motors
 `bm save sample1 motor1 motor2 motor3`
 
