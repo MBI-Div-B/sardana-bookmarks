@@ -1,8 +1,8 @@
-# sardana-bookmarks
+## sardana-bookmarks
 Simple bookmark manager macro for Sardana/ spock
 
 
-This is a simple bookmark manager for Sardana/ spock. It can save a list of motor positions under a user-specified name. This (collective) position can then be recalled with the "goto" command (moving motors sequentially) or the "pgoto" command (parallel movement.
+This is a simple bookmark manager for Sardana/ spock. It can save a list of motor positions under a user-specified name. This (collective) position can then be recalled with the "goto" command (moving motors sequentially) or the "pgoto" command (parallel movement).
 
 The command to be used for moving the motors is configurable, default is `umv`.
 
@@ -12,55 +12,59 @@ Usage:
 
 Available commands are: `list`, `save`, `goto`, `pgoto`, `remove`, `export`, `import`, `mv_cmd`
 
-Examples:
-* `bm list`
-* `bm save sample1 motor1 motor2 motor3`
-* `bm goto sample1`
-* `bm remove sample1`
-* `bm export bookmarks.json`
+## Examples
 
+
+### List existing bookmarks
+`bm list`
 
 ```
-p04/door/haspp04max.01 [10]: wa s.
-Current positions (user, dial) on 2021-03-21 22:04:49.779620
+   name   Motor   target   Motor   target   Motor   target
+ ------ ------- -------- ------- -------- ------- --------
+   pos1   mot01      0.0   mot02      0.0
+   pos2   mot01      5.0   mot02     -4.0   mot03      0.0
+   pos3   mot01     10.0   mot02     -4.0   mot03     10.0
+   test   mot01      0.0   mot02      0.0   mot03     10.0
 
-            sx        sy        sz
-User   14.5303   19.9997   23.9987
-Dial   14.5303   19.9997   23.9987
-
-p04/door/haspp04max.01 [11]: bm save YAG sx sy sz
-
-p04/door/haspp04max.01 [12]: bm list
-List of bookmarked positions:
-
-sample1
-=======
-  1. sx       --> 14.530312500000093
-  2. sy       --> 19.99968751249983
-  3. sz       --> 23.34999999980909
-
-
-YAG
-===
-  1. sx       --> 14.530312500000093
-  2. sy       --> 19.99968751249983
-  3. sz       --> 23.99874999981071
-
-
-
-p04/door/haspp04max.01 [13]: bm goto YAG
-Moving to bookmark YAG:
-  1. sx           14.530312500000093 --> 14.530312500000093
-  2. sy           19.99968751249983 --> 19.99968751249983
-  3. sz           23.99874999981071 --> 23.99874999981071
-
-
-Type "yes" to proceed: yes
-        sz
-   23.9987
-
-
-p04/door/haspp04max.01 [15]: bm export bookmarks.json
-Saved bookmarks to file bookmarks.json.
+move command is umv
 ```
+
+### Save current position of selected motors
+`bm save sample1 motor1 motor2 motor3`
+
+### Go to saved location
+`bm goto sample1`
+
+```
+sequential movement to bookmark pos2
+
+  name  Motor   current    target  Motor   current    target  Motor   current    target 
+ ------ ------- --------- -------- ------- --------- -------- ------- --------- --------
+  pos2  mot01     5.0       5.0    mot02     -4.0      -4.0   mot03     0.0       0.0   
+
+move command is umv
+
+Proceed (Y/n) [y]? 
+     mot01
+    5.0000
+
+     mot02
+   -4.0000
+
+     mot03
+    0.0000
+```
+
+### Remove bookmark
+`bm remove sample1`
+
+### Export bookmarks to file
+`bm export bookmarks.json`
+
+### Load bookmarks from file
+`bm import bookmarks.json`
+
+### Change move command
+`bm mv_cmd my_mv`
+
 

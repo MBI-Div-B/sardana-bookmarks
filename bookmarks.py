@@ -147,7 +147,7 @@ class bm(Macro):
         self.info(f'move command is {self.bm["mv_cmd"]}')
 
     def cmd_list(self, filter='.*', show_current=False):
-        '''Print a list defined bookmarks.
+        '''Print a list of defined bookmarks.
 
         Shows only bookmarks with names matching the filter regex
         Optionally shows current positions of affected motors.
