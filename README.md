@@ -33,26 +33,42 @@ move command is umv
 `bm save sample1 motor1 motor2 motor3`
 
 ### Go to saved location
-`bm goto sample1`
+`bm goto pos3`
 
 ```
-sequential movement to bookmark pos2
+sequential movement to bookmark pos3
 
   name  Motor   current    target  Motor   current    target  Motor   current    target 
  ------ ------- --------- -------- ------- --------- -------- ------- --------- --------
-  pos2  mot01     5.0       5.0    mot02     -4.0      -4.0   mot03     0.0       0.0   
+  pos3  mot01     5.0       10.0   mot02     -4.0      -4.0   mot03     0.0       10.0  
 
 move command is umv
 
 Proceed (Y/n) [y]? 
      mot01
-    5.0000
+   10.0000
 
      mot02
    -4.0000
 
      mot03
-    0.0000
+   10.0000
+```
+
+`bm pgoto pos2`
+
+```
+parallel movement to bookmark pos2
+
+  name  Motor   current    target  Motor   current    target  Motor   current    target 
+ ------ ------- --------- -------- ------- --------- -------- ------- --------- --------
+  pos2  mot01     10.0      5.0    mot02     -4.0      -4.0   mot03     10.0      0.0   
+
+move command is umv
+
+Proceed (Y/n) [y]? 
+     mot01      mot02      mot03
+    5.0000    -4.0000     0.0000
 ```
 
 ### Remove bookmark
