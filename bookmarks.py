@@ -108,8 +108,8 @@ class bm(Macro):
             mv_cmd = self.bm['mv_cmd']
             self.output(f'{mode} movement to bookmark {name}')
             self.print_bm(bookmark, show_current=True)
-            ans = self.input('Proceed (Y/n)?')
-            if ans.lower() != 'n':
+            ans = self.input('Proceed (Y/n)?', default_value='y')
+            if ans.lower() == 'y':
                 if parallel:
                     mv_arg = []
                     for m in bookmark:
