@@ -122,3 +122,18 @@ class bmsave(_bm):
         if name in self.bm:
             self.output(f'Updating existing bookmark {name}')
         self.bm.update({name: new_bm})
+
+
+
+class bm_setmv(Macro):
+    param_def = [
+        ['macroname', Type.String, None, 'Macro to use for motor movement'],
+    ]
+
+    def run(self, macroname):
+        bm_dict = self.getEnv('_Bookmarks')
+        if macroname in self.getMacroNames():
+            bm_dict['mv_cmd'] = macroname
+        else:
+            self.warning(f'{macroname} is not a macro')
+        self.info(f'move command is {bm_dict["mv_cmd"]}')
