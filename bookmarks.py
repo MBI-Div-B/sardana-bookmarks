@@ -106,6 +106,7 @@ class lsbm(_bm):
 
 
 class bmsave(_bm):
+    '''Save motor positions under name. Supports wildcards for motor names.'''
     param_def = [
         ['name', Type.String, None, 'Name of the bookmark'],
         ['motornames', [['filter', Type.String, None, 'Name or pattern of motors']], None, 'Motors']
@@ -127,6 +128,7 @@ class bmsave(_bm):
 
 
 class bm_setmv(_bm):
+    '''Set macro to be used for motor movement.'''
     param_def = [
         ['macroname', Type.String, None, 'Macro to use for motor movement'],
     ]
@@ -141,6 +143,7 @@ class bm_setmv(_bm):
 
 
 class bm_export(_bm):
+    '''Export bookmarks to json file.'''
     param_def = [
         ['fname', Type.String, None, 'json file name'],
     ]
@@ -155,6 +158,7 @@ class bm_export(_bm):
 
 
 class bm_import(_bm):
+    '''Import bookmarks from json file.'''
     param_def = [
         ['fname', Type.String, None, 'json file name']
     ]
@@ -169,7 +173,9 @@ class bm_import(_bm):
         except FileNotFoundError:
             self.warning(f'{fname} not found')
 
+
 class bm_remove(_bm):
+    '''Remove bookmark from list.'''
     param_def = [
         ['name', Type.String, None, 'Name of the bookmark'],
     ]
