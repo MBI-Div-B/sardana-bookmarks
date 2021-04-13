@@ -168,3 +168,16 @@ class bm_import(_bm):
             self.info(f'Loaded bookmarks from {fname}')
         except FileNotFoundError:
             self.warning(f'{fname} not found')
+
+class bm_remove(_bm):
+    param_def = [
+        ['name', Type.String, None, 'Name of the bookmark'],
+    ]
+
+    def run(self, name):
+        self.load_from_env()
+        try:
+            self.bm.pop(name)
+            self.info(f'Removed bookmark {name}.')
+        except KeyError:
+            self.info(f'{name} is not a defined bookmark.')
