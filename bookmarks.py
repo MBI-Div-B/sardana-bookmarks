@@ -23,14 +23,15 @@ class _bm(Macro):
     def load_from_env(self):
         '''Loads a dictionary of bookmarks from environment'''
         try:
-            bm_dict = self.getEnv('_Bookmarks')
-            self.bm = bm_dict['bookmarks']
-            self.mv_cmd = bm_dict['mv_cmd']
+            self.bm_dict = self.getEnv('_Bookmarks')
+            self.bm = self.bm_dict['bookmarks']
+            self.mv_cmd = self.bm_dict['mv_cmd']
         except UnknownEnv:
             self.output('No bookmarks defined in environment. Creating empty.')
             self.bm = dict()
             self.mv_cmd = 'umv'
-            self.setEnv('_Bookmarks', dict(bookmarks=self.bm, mv_cmd=self.mv_cmd))
+            self.bm_dict = dict(mv_cmd=self.mv_cmd, bookmarks=self.bm)
+            self.setEnv('_Bookmarks', self.bm_dict)
 
 
 class bmgo(_bm):
@@ -125,15 +126,45 @@ class bmsave(_bm):
 
 
 
-class bm_setmv(Macro):
+class bm_setmv(_bm):
     param_def = [
         ['macroname', Type.String, None, 'Macro to use for motor movement'],
     ]
 
     def run(self, macroname):
-        bm_dict = self.getEnv('_Bookmarks')
+        self.load_from_env()
         if macroname in self.getMacroNames():
-            bm_dict['mv_cmd'] = macroname
+            self.bm_dict['mv_cmd'] = macroname
         else:
             self.warning(f'{macroname} is not a macro')
-        self.info(f'move command is {bm_dict["mv_cmd"]}')
+        self.info(f'move command is {self.bm_dict["mv_cmd"]}')
+
+
+class bm_export(_bm):
+    param_def = [
+        ['fname', Type.String, None, 'json file name'],
+    ]
+
+    def run(self, fname):
+        self.load_from_env()
+        if not fname.endswith('.json'):
+                fname += '.json'
+        with open(fname, 'w') as f:
+            json.dump(self.bm_dict, f)
+        self.info(f'Saved bookmarks to {fname}')
+
+
+class bm_import(_bm):
+    param_def = [
+        ['fname', Type.String, None, 'json file name']
+    ]
+
+    def run(self, fname):
+        self.load_from_env()
+        try:
+            with open(fname, 'r') as f:
+                bm = json.load(f)
+            self.bm_dict.update(bm)
+            self.info(f'Loaded bookmarks from {fname}')
+        except FileNotFoundError:
+            self.warning(f'{fname} not found')
