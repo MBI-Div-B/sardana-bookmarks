@@ -10,40 +10,118 @@ Available macros are: `lsbm`, `bmsave`, `bmgo`, `bm_remove`, `bm_setmv`, `bm_exp
 
 Examples:
 
-
+Save positions under a name, use wildcards for motor names
 ```
-Door_test_1 [126]: lsbm
-   name   Motor   target   Motor   target   Motor   target   Motor   target      Motor   target
- ------ ------- -------- ------- -------- ------- -------- ------- -------- ---------- --------
-   test   mot01      0.0
-   pos2   mot04      0.0   mot01      2.0   mot03     10.0   mot02     -4.0
-   new1   mot04      0.0   mot02     -4.0   mot03     10.0   mot01      2.0
-   new2   mot04      0.0   mot02      0.0   mot03      0.0   mot01      0.0   offset01      0.0
+Door_test_1 [19]: wa
+Current positions (user) on 2021-05-01 11:44:12.532858
+
+         gap01     mot01     mot02     mot03     mot04  offset01
+User    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+
+Door_test_1 [20]: lsbm
+No bookmarks defined
+
+Door_test_1 [21]: bmsave pos1 gap01 mot01
+
+Door_test_1 [22]: bmsave wild mot.*
+
+Door_test_1 [23]: lsbm
+   name   Motor   target   Motor   target   Motor   target   Motor   target
+ ------ ------- -------- ------- -------- ------- -------- ------- --------
+   pos1   gap01      0.0   mot01      0.0
+   wild   mot03      0.0   mot01      0.0   mot04      0.0   mot02      0.0
 
 move command is umv
+```
 
+Saving under an existing name updates the bookmark
+```
+Door_test_1 [37]: umvr mot01 2 mot02 1
+     mot01      mot02
+    2.0000     1.0000
 
+Door_test_1 [38]: bmsave wild mot.*
+Updating existing bookmark wild
 
-Door_test_1 [131]: bmgo pos2
-sequential movement to bookmark pos2
+Door_test_1 [39]: lsbm
+   name   Motor   target   Motor   target   Motor   target   Motor   target
+ ------ ------- -------- ------- -------- ------- -------- ------- --------
+   pos1   gap01      0.0   mot01      0.0
+   wild   mot03      0.0   mot01      2.0   mot04      0.0   mot02      1.0
 
-   name   Motor   current   target   Motor   current   target   Motor   current   target   Motor   current   target
- ------ ------- --------- -------- ------- --------- -------- ------- --------- -------- ------- --------- --------
-   pos2   mot04       0.0      0.0   mot01       0.0      2.0   mot03       0.0     10.0   mot02       0.0     -4.0
+move command is umv
+```
+
+Recall saved position in sequential movement (default)
+```
+Door_test_1 [24]: umvr mot01 1 mot02 -2 mot03 1.5
+     mot01      mot02      mot03
+    1.0000    -2.0000     1.5000
+
+Door_test_1 [25]: bmgo pos1
+sequential movement to bookmark pos1
+
+   name   Motor   current   target   Motor   current   target
+ ------ ------- --------- -------- ------- --------- --------
+   pos1   gap01      -1.0      0.0   mot01       1.0      0.0
 
 move command is umv
 
 Proceed (Y/n) [y]? 
-     mot04
+     gap01
     0.0000
 
      mot01
-    2.0000
+    0.0000
+```
 
-     mot03
-   10.0000
+Recall position in parallel movement by passing `True` as final argument
+```
+Door_test_1 [26]: bmgo wild True
+parallel movement to bookmark wild
 
-     mot02
-   -4.0000
+   name   Motor   current   target   Motor   current   target   Motor   current   target   Motor   current   target
+ ------ ------- --------- -------- ------- --------- -------- ------- --------- -------- ------- --------- --------
+   wild   mot03       1.5      0.0   mot01       0.0      0.0   mot04       0.0      0.0   mot02      -1.5      0.0
+
+move command is umv
+
+Proceed (Y/n) [y]? 
+     mot03      mot01      mot04      mot02
+    0.0000     0.0000     0.0000     0.0000
+```
+
+Export bookmarks to json file
+```
+Door_test_1 [27]: bm_export bookmarks.json
+Saved bookmarks to bookmarks.json
+
+```
+
+Remove bookmark
+```
+Door_test_1 [29]: bm_remove wild
+Removed bookmark wild.
+
+Door_test_1 [30]: lsbm
+   name   Motor   target   Motor   target
+ ------ ------- -------- ------- --------
+   pos1   gap01      0.0   mot01      0.0
+
+move command is umv
+```
+
+Import from json file
+```
+Door_test_1 [31]: bm_import bookmarks.json
+Loaded bookmarks from bookmarks.json
+
+Door_test_1 [32]: lsbm
+   name   Motor   target   Motor   target   Motor   target   Motor   target
+ ------ ------- -------- ------- -------- ------- -------- ------- --------
+   pos1   gap01      0.0   mot01      0.0
+   wild   mot03      0.0   mot01      0.0   mot04      0.0   mot02      0.0
+
+move command is umv
 ```
 
