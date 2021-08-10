@@ -6,7 +6,9 @@ This is a simple bookmark manager for Sardana/ spock. It can save a list of moto
 
 The command to be used for moving the motors is configurable, default is `umv`.
 
-Available macros are: `lsbm`, `bmsave`, `bmgo`, `bm_remove`, `bm_setmv`, `bm_export`, `bm_import`
+Bookmarks can be ex- and imported via json files. This can be automated by setting an automatic backup file using the `bm_backupfile` macro. If this is set, all bookmarks are exported to that file whenever a new position is bookmarked. Beware that this overwrites the old file, howerver.
+
+Available macros are: `lsbm`, `bmsave`, `bmgo`, `bm_remove`, `bm_setmv`, `bm_export`, `bm_import`, `bm_backupfile`
 
 Examples:
 
