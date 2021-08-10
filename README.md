@@ -110,15 +110,23 @@ move command is umv
 ```
 
 ### Remove bookmark
-`bm remove sample1`
+`bm_remove sample1`
 
 ### Export bookmarks to file
-`bm export bookmarks.json`
+`bm_export bookmarks.json`
+If no file name is given, the macro tries to fall back to the automatic backup file.
 
 ### Load bookmarks from file
-`bm import bookmarks.json`
+`bm_import bookmarks.json`
 
 ### Change move command
-`bm mv_cmd my_mv`
+`bm_setmv my_mv`
+
+### Set automatic backupfile
+`bm_backupfile /home/labuser/bookmarks.json`
+WIthout a file name argument, this returns the current backup file location.
+
+
+Issuing
 
 
