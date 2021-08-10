@@ -119,8 +119,15 @@ class bmsave(_bm):
         for n in motornames:
             motors += self.findObjs(n, Type.Moveable, reserve=False)
         for motor in motors:
-            new_bm.append(dict(name=motor.getName(),
-                               position=motor.getPosition()))
+            pos = motor.getPosition()
+            if pos is None:
+                self.output(f'Error: {motor} reports no position. Aborting.')
+                return
+            else:
+                new_bm.append(dict(
+                    name=motor.getName(),
+                    position=motor.getPosition()
+                    ))
         if name in self.bm:
             self.output(f'Updating existing bookmark {name}')
         self.bm.update({name: new_bm})
