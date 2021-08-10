@@ -28,7 +28,7 @@ class _bm(Macro):
             self.mv_cmd = self.bm_dict['mv_cmd']
             self.autosavefile = self.bm_dict['autosavefile']
         except UnknownEnv:
-            self.output('No bookmarks defined in environment. Creating empty.')
+            self.info('No bookmarks defined in environment. Creating empty.')
             self.bm = dict()
             self.mv_cmd = 'umv'
             self.autosavefile = None
@@ -72,7 +72,7 @@ class bmgo(_bm):
             else:
                 self.output('Aborted')
         except KeyError:
-            self.output(f'{name} is not a defined bookmark.')
+            self.warning(f'{name} is not a defined bookmark.')
 
 
 class lsbm(_bm):
@@ -132,12 +132,12 @@ class bmsave(_bm):
             pos = motor.getPosition()
             motorname = motor.getName()
             if pos is None:
-                self.output(f'Error: {motorname} has no position. Aborting.')
+                self.warning(f'Error: {motorname} has no position. Aborting.')
                 return
             else:
                 new_bm.append(dict(name=motorname, position=pos))
         if name in self.bm:
-            self.output(f'Updating existing bookmark {name}')
+            self.info(f'Updating existing bookmark {name}')
         self.bm.update({name: new_bm})
         if self.autosavefile is not None:
             self.execMacro(['bm_export', self.autosavefile])
@@ -168,8 +168,8 @@ class bm_export(_bm):
         self.load_from_env()
         if fname is None:
             if self.autosavefile is None:
-                self.output('No filename given and backup file not set. '
-                            'Aborting.')
+                self.warning('No filename given and backup file not set. '
+                             'Aborting.')
                 return
             fname = self.autosavefile
         if not fname.endswith('.json'):
@@ -208,7 +208,7 @@ class bm_remove(_bm):
             self.bm.pop(name)
             self.info(f'Removed bookmark {name}.')
         except KeyError:
-            self.info(f'{name} is not a defined bookmark.')
+            self.warning(f'{name} is not a defined bookmark.')
 
 class bm_backupfile(_bm):
     '''Query and set automatic backupfile'''
