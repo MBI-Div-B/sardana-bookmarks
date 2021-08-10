@@ -1,4 +1,4 @@
-# sardana-bookmarks
+## sardana-bookmarks
 Simple bookmark manager macro for Sardana/ spock
 
 
@@ -30,24 +30,6 @@ Door_test_1 [23]: lsbm
  ------ ------- -------- ------- -------- ------- -------- ------- --------
    pos1   gap01      0.0   mot01      0.0
    wild   mot03      0.0   mot01      0.0   mot04      0.0   mot02      0.0
-
-move command is umv
-```
-
-Saving under an existing name updates the bookmark
-```
-Door_test_1 [37]: umvr mot01 2 mot02 1
-     mot01      mot02
-    2.0000     1.0000
-
-Door_test_1 [38]: bmsave wild mot.*
-Updating existing bookmark wild
-
-Door_test_1 [39]: lsbm
-   name   Motor   target   Motor   target   Motor   target   Motor   target
- ------ ------- -------- ------- -------- ------- -------- ------- --------
-   pos1   gap01      0.0   mot01      0.0
-   wild   mot03      0.0   mot01      2.0   mot04      0.0   mot02      1.0
 
 move command is umv
 ```
@@ -124,4 +106,17 @@ Door_test_1 [32]: lsbm
 
 move command is umv
 ```
+
+### Remove bookmark
+`bm remove sample1`
+
+### Export bookmarks to file
+`bm export bookmarks.json`
+
+### Load bookmarks from file
+`bm import bookmarks.json`
+
+### Change move command
+`bm mv_cmd my_mv`
+
 
