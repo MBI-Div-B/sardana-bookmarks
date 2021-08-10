@@ -26,11 +26,17 @@ class _bm(Macro):
             self.bm_dict = self.getEnv('_Bookmarks')
             self.bm = self.bm_dict['bookmarks']
             self.mv_cmd = self.bm_dict['mv_cmd']
+            self.autosavefile = self.bm_dict['autosavefile']
         except UnknownEnv:
             self.output('No bookmarks defined in environment. Creating empty.')
             self.bm = dict()
             self.mv_cmd = 'umv'
-            self.bm_dict = dict(mv_cmd=self.mv_cmd, bookmarks=self.bm)
+            self.autosavefile = None
+            self.bm_dict = dict(
+                mv_cmd=self.mv_cmd,
+                bookmarks=self.bm,
+                autosavefile=self.autosavefile,
+                )
             self.setEnv('_Bookmarks', self.bm_dict)
 
 
@@ -72,8 +78,8 @@ class bmgo(_bm):
 class lsbm(_bm):
     '''List existing bookmarks'''
     param_def = [
-        ['filter', Type.String, Optional, 'Regular expression to filter bookmarks'],
-        ['show_current', Type.Boolean, Optional, 'Also show current motor positions']
+        ['filter', Type.String, Optional, 'regex to filter bookmarks'],
+        ['show_current', Type.Boolean, Optional, 'show current positions']
     ]
 
     def run(self, filter='.*', show_current=False):
@@ -109,7 +115,11 @@ class bmsave(_bm):
     '''Save motor positions under name. Supports wildcards for motor names.'''
     param_def = [
         ['name', Type.String, None, 'Name of the bookmark'],
-        ['motornames', [['filter', Type.String, None, 'Name or pattern of motors']], None, 'Motors']
+        [
+            'motornames',
+            [['filter', Type.String, None, 'Name or pattern of motors']],
+            None, 'Motors'
+        ]
     ]
 
     def run(self, name, motornames):
@@ -120,19 +130,18 @@ class bmsave(_bm):
             motors += self.findObjs(n, Type.Moveable, reserve=False)
         for motor in motors:
             pos = motor.getPosition()
+            motorname = motor.getName()
             if pos is None:
-                self.output(f'Error: {motor} reports no position. Aborting.')
+                self.output(f'Error: {motorname} has no position. Aborting.')
                 return
             else:
-                new_bm.append(dict(
-                    name=motor.getName(),
-                    position=motor.getPosition()
-                    ))
+                new_bm.append(dict(name=motorname, position=pos))
         if name in self.bm:
             self.output(f'Updating existing bookmark {name}')
         self.bm.update({name: new_bm})
-
-
+        if self.autosavefile is not None:
+            self.execMacro(['bm_export', self.autosavefile])
+    
 
 class bm_setmv(_bm):
     '''Set macro to be used for motor movement.'''
@@ -152,11 +161,17 @@ class bm_setmv(_bm):
 class bm_export(_bm):
     '''Export bookmarks to json file.'''
     param_def = [
-        ['fname', Type.String, None, 'json file name'],
+        ['fname', Type.String, Optional, 'json file name'],
     ]
 
     def run(self, fname):
         self.load_from_env()
+        if fname is None:
+            if self.autosavefile is None:
+                self.output('No filename given and backup file not set. '
+                            'Aborting.')
+                return
+            fname = self.autosavefile
         if not fname.endswith('.json'):
                 fname += '.json'
         with open(fname, 'w') as f:
@@ -194,3 +209,17 @@ class bm_remove(_bm):
             self.info(f'Removed bookmark {name}.')
         except KeyError:
             self.info(f'{name} is not a defined bookmark.')
+
+class bm_backupfile(_bm):
+    '''Query and set automatic backupfile'''
+    param_def = [
+        ['fname', Type.String, Optional, 'path to backupfile'],
+    ]
+
+    def run(self, fname):
+        self.load_from_env()
+        if fname is not None:
+            fname = fname if fname.endswith('json') else fname + '.json'
+            self.autosavefile = fname
+            self.bm_dict.update(autosavefile=fname)
+        self.output(f'Automatic backup file: {self.autosavefile}')
