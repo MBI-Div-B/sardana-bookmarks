@@ -2,87 +2,109 @@
 Simple bookmark manager macro for Sardana/ spock
 
 
-This is a simple bookmark manager for Sardana/ spock. It can save a list of motor positions under a user-specified name. This (collective) position can then be recalled with the "goto" command (moving motors sequentially) or the "pgoto" command (parallel movement).
+This is a simple bookmark manager for Sardana/ spock. It can save a list of motor positions under a user-specified name. This (collective) position can then be recalled with the "bmgo" macro. An optional parameter determines whether all motors are moved simultaneously, or sequentially (default).
 
 The command to be used for moving the motors is configurable, default is `umv`.
 
-Usage:
+Available macros are: `lsbm`, `bmsave`, `bmgo`, `bm_remove`, `bm_setmv`, `bm_export`, `bm_import`
 
-`bm <cmd> [<name>] [<motors>]`
+Examples:
 
-Available commands are: `list`, `save`, `goto`, `pgoto`, `remove`, `export`, `import`, `mv_cmd`
-
-## Examples
-
-
-### List existing bookmarks
-`bm list`
-
+Save positions under a name, use wildcards for motor names
 ```
-   name   Motor   target   Motor   target   Motor   target
- ------ ------- -------- ------- -------- ------- --------
-   pos1   mot01      0.0   mot02      0.0
-   pos2   mot01      5.0   mot02     -4.0   mot03      0.0
-   pos3   mot01     10.0   mot02     -4.0   mot03     10.0
-   test   mot01      0.0   mot02      0.0   mot03     10.0
+Door_test_1 [19]: wa
+Current positions (user) on 2021-05-01 11:44:12.532858
+
+         gap01     mot01     mot02     mot03     mot04  offset01
+User    0.0000    0.0000    0.0000    0.0000    0.0000    0.0000
+
+Door_test_1 [20]: lsbm
+No bookmarks defined
+
+Door_test_1 [21]: bmsave pos1 gap01 mot01
+
+Door_test_1 [22]: bmsave wild mot.*
+
+Door_test_1 [23]: lsbm
+   name   Motor   target   Motor   target   Motor   target   Motor   target
+ ------ ------- -------- ------- -------- ------- -------- ------- --------
+   pos1   gap01      0.0   mot01      0.0
+   wild   mot03      0.0   mot01      0.0   mot04      0.0   mot02      0.0
 
 move command is umv
 ```
 
-Optionally a regex can be provided to filter the bookmark list
-
-`bm list pos.`
-
+Recall saved position in sequential movement (default)
 ```
-   name   Motor   target   Motor   target   Motor   target
- ------ ------- -------- ------- -------- ------- --------
-   pos1   mot01      0.0   mot02      0.0
-   pos2   mot01      5.0   mot02     -4.0   mot03      0.0
-   pos3   mot01     10.0   mot02     -4.0   mot03     10.0
-
-move command is umv
-```
-
-### Save current position of selected motors
-`bm save sample1 motor1 motor2 motor3`
-
-### Go to saved location
-`bm goto pos3`
-
-```
-sequential movement to bookmark pos3
-
-  name  Motor   current    target  Motor   current    target  Motor   current    target 
- ------ ------- --------- -------- ------- --------- -------- ------- --------- --------
-  pos3  mot01     5.0       10.0   mot02     -4.0      -4.0   mot03     0.0       10.0  
-
-move command is umv
-
-Proceed (Y/n) [y]? 
-     mot01
-   10.0000
-
-     mot02
-   -4.0000
-
-     mot03
-   10.0000
-```
-
-`bm pgoto pos2`
-
-```
-parallel movement to bookmark pos2
-
-  name  Motor   current    target  Motor   current    target  Motor   current    target 
- ------ ------- --------- -------- ------- --------- -------- ------- --------- --------
-  pos2  mot01     10.0      5.0    mot02     -4.0      -4.0   mot03     10.0      0.0   
-
-move command is umv
-
-Proceed (Y/n) [y]? 
+Door_test_1 [24]: umvr mot01 1 mot02 -2 mot03 1.5
      mot01      mot02      mot03
-    5.0000    -4.0000     0.0000
+    1.0000    -2.0000     1.5000
+
+Door_test_1 [25]: bmgo pos1
+sequential movement to bookmark pos1
+
+   name   Motor   current   target   Motor   current   target
+ ------ ------- --------- -------- ------- --------- --------
+   pos1   gap01      -1.0      0.0   mot01       1.0      0.0
+
+move command is umv
+
+Proceed (Y/n) [y]? 
+     gap01
+    0.0000
+
+     mot01
+    0.0000
+```
+
+Recall position in parallel movement by passing `True` as final argument
+```
+Door_test_1 [26]: bmgo wild True
+parallel movement to bookmark wild
+
+   name   Motor   current   target   Motor   current   target   Motor   current   target   Motor   current   target
+ ------ ------- --------- -------- ------- --------- -------- ------- --------- -------- ------- --------- --------
+   wild   mot03       1.5      0.0   mot01       0.0      0.0   mot04       0.0      0.0   mot02      -1.5      0.0
+
+move command is umv
+
+Proceed (Y/n) [y]? 
+     mot03      mot01      mot04      mot02
+    0.0000     0.0000     0.0000     0.0000
+```
+
+Export bookmarks to json file
+```
+Door_test_1 [27]: bm_export bookmarks.json
+Saved bookmarks to bookmarks.json
+
+```
+
+Remove bookmark
+```
+Door_test_1 [29]: bm_remove wild
+Removed bookmark wild.
+
+Door_test_1 [30]: lsbm
+   name   Motor   target   Motor   target
+ ------ ------- -------- ------- --------
+   pos1   gap01      0.0   mot01      0.0
+
+move command is umv
+```
+
+Import from json file
+```
+Door_test_1 [31]: bm_import bookmarks.json
+Loaded bookmarks from bookmarks.json
+
+Door_test_1 [32]: lsbm
+   name   Motor   target   Motor   target   Motor   target   Motor   target
+ ------ ------- -------- ------- -------- ------- -------- ------- --------
+   pos1   gap01      0.0   mot01      0.0
+   wild   mot03      0.0   mot01      0.0   mot04      0.0   mot02      0.0
+
+move command is umv
 ```
 
 ### Remove bookmark
