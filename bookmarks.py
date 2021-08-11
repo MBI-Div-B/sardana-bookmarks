@@ -57,39 +57,47 @@ class bmgo(_bm):
 
     def run(self, name, parallel, exclude):
         self.load_from_env()
-        try:
-            bookmark = self.bm[name]
-            excluded = []
-            for ex in exclude:
-                if ex is not None:
-                    motors = self.findObjs(ex, Type.Moveable, reserve=False)
-                    excluded += [m.getName() for m in motors]
-            
-            mode = 'parallel' if parallel else 'sequential'
-            self.output(f'{mode} movement to bookmark {name}\n')
-            
-            self.lsbm(name, True)
-            if len(excluded) > 0:
-                self.output(f'excluded motors: {excluded}')
-
-            ans = self.input('\nProceed (Y/n)?', default_value='y')
-            if ans.lower() == 'y':
-                if parallel:
-                    mv_arg = []
-                    for m in bookmark:
-                        if m['name'] not in excluded:
-                            mv_arg.append(m['name'])
-                            mv_arg.append(m['position'])
-                    self.execMacro([self.mv_cmd] + mv_arg)
-                else:
-                    for m in bookmark:
-                        if m['name'] not in excluded:
-                            self.execMacro([self.mv_cmd, m['name'], m['position']])
-                            self.output('')  # avoids output being overwritten
-            else:
-                self.output('Aborted')
-        except KeyError:
+        if name not in self.bm:
             self.warning(f'{name} is not a defined bookmark.')
+            return
+
+        bookmark = self.bm[name]
+        excluded = []
+        for ex in exclude:
+            if ex is not None:
+                motors = self.findObjs(ex, Type.Moveable, reserve=False)
+                excluded += [m.getName() for m in motors]
+        
+        mode = 'parallel' if parallel else 'sequential'
+        self.output(f'{mode} movement to bookmark {name}\n')
+        
+        self.lsbm(name, True)
+        if len(excluded) > 0:
+            self.output(f'excluded motors: {excluded}')
+
+        ans = self.input('\nProceed (Y/n)?', default_value='y')
+        if ans.lower() == 'y':
+            if parallel:
+                self.move_parallel(bookmark, excluded)
+            else:
+                self.move_sequential(bookmark, excluded)
+        else:
+            self.output('Aborted')
+        
+    def move_parallel(self, bookmark, excluded):
+        mv_arg = []
+        for m in bookmark:
+            if m['name'] not in excluded:
+                mv_arg.append(m['name'])
+                mv_arg.append(m['position'])
+        self.execMacro([self.mv_cmd] + mv_arg)
+    
+    def move_sequential(self, bookmark, excluded):
+        for m in bookmark:
+            if m['name'] not in excluded:
+                self.execMacro([self.mv_cmd, m['name'], m['position']])
+                self.output('')  # avoids output being overwritten
+            
 
 
 class lsbm(_bm):
