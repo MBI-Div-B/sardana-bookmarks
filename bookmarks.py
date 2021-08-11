@@ -47,28 +47,45 @@ class bmgo(_bm):
          'Name of the bookmark to go to'],
         ['parallel', Type.Boolean, False,
          'Move motors sequentially (False, default) or parallel (True)'],
+        ['exclude', [[
+            'filter', Type.String, Optional, 'Name or pattern of motors'
+            ]],
+            Optional, 'Motors to exclude from movement'
+        ]
     ]
     interactive = True
 
-    def run(self, name, parallel):
+    def run(self, name, parallel, exclude):
         self.load_from_env()
         try:
             bookmark = self.bm[name]
+            excluded = []
+            for ex in exclude:
+                if ex is not None:
+                    motors = self.findObjs(ex, Type.Moveable, reserve=False)
+                    excluded += [m.getName() for m in motors]
+            
             mode = 'parallel' if parallel else 'sequential'
             self.output(f'{mode} movement to bookmark {name}\n')
+            
             self.lsbm(name, True)
+            if len(excluded) > 0:
+                self.output(f'excluded motors: {excluded}')
+
             ans = self.input('\nProceed (Y/n)?', default_value='y')
             if ans.lower() == 'y':
                 if parallel:
                     mv_arg = []
                     for m in bookmark:
-                        mv_arg.append(m['name'])
-                        mv_arg.append(m['position'])
+                        if m['name'] not in excluded:
+                            mv_arg.append(m['name'])
+                            mv_arg.append(m['position'])
                     self.execMacro([self.mv_cmd] + mv_arg)
                 else:
                     for m in bookmark:
-                        self.execMacro([self.mv_cmd, m['name'], m['position']])
-                        self.output('')  # avoids output being overwritten
+                        if m['name'] not in excluded:
+                            self.execMacro([self.mv_cmd, m['name'], m['position']])
+                            self.output('')  # avoids output being overwritten
             else:
                 self.output('Aborted')
         except KeyError:
