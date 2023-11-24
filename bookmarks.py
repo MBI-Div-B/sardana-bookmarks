@@ -37,7 +37,11 @@ class _bm(Macro):
                 bookmarks=self.bm,
                 autosavefile=self.autosavefile,
                 )
-            self.setEnv('_Bookmarks', self.bm_dict)
+            self.write_to_env()
+
+    def write_to_env(self):
+        self.setEnv('_Bookmarks', self.bm_dict)
+
 
 
 class bmgo(_bm):
@@ -129,7 +133,7 @@ class lsbm(_bm):
                 if show_current:
                     mot = self.getMoveable(m['name'])
                     row.append(mot.getPosition())
-                row.append(m['position'])
+                row.append(f"{m['position']:.3f}")
             out.appendRow(row)
         for line in out.genOutput():
             self.output(line)
@@ -164,6 +168,7 @@ class bmsave(_bm):
         if name in self.bm:
             self.info(f'Updating existing bookmark {name}')
         self.bm.update({name: new_bm})
+        self.write_to_env()
         if self.autosavefile is not None:
             self.execMacro(['bm_export', self.autosavefile])
     
@@ -180,6 +185,7 @@ class bm_setmv(_bm):
             self.bm_dict['mv_cmd'] = macroname
         else:
             self.warning(f'{macroname} is not a macro')
+        self.write_to_env()
         self.info(f'move command is {self.bm_dict["mv_cmd"]}')
 
 
@@ -216,6 +222,7 @@ class bm_import(_bm):
             with open(fname, 'r') as f:
                 bm = json.load(f)
             self.bm_dict.update(bm)
+            self.write_to_env()
             self.info(f'Loaded bookmarks from {fname}')
         except FileNotFoundError:
             self.warning(f'{fname} not found')
@@ -231,6 +238,7 @@ class bm_remove(_bm):
         self.load_from_env()
         try:
             self.bm.pop(name)
+            self.write_to_env()
             self.info(f'Removed bookmark {name}.')
         except KeyError:
             self.warning(f'{name} is not a defined bookmark.')
