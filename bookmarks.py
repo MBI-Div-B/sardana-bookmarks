@@ -123,8 +123,13 @@ class lsbm(_bm):
             cols = ['name'] + ncols * ['Motor', 'current', 'target']
         else:
             cols = ['name'] + ncols * ['Motor', 'target']
-        align = Alignment.Right * len(cols)
+        align = [Alignment.Right,] * len(cols)
         out = List(cols, text_alignment=align)
+
+        pos_fmt = self.getViewOption("PosFormat")
+        fmt = f'.7f'
+        if pos_fmt > -1:
+            fmt = f".{int(pos_fmt)}f"
 
         for bm_name, motorlist in bm_sel.items():
             row = [bm_name]
@@ -132,9 +137,10 @@ class lsbm(_bm):
                 row.append(m['name'])
                 if show_current:
                     mot = self.getMoveable(m['name'])
-                    row.append(mot.getPosition())
-                row.append(f"{m['position']:.3f}")
+                    row.append(f"{mot.getPosition():{fmt}}")
+                row.append(f"{m['position']:{fmt}}")
             out.appendRow(row)
+
         for line in out.genOutput():
             self.output(line)
         self.output('\nmove command is ' + self.mv_cmd)
