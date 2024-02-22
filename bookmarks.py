@@ -222,7 +222,7 @@ class bm_export(_bm):
         if not fname.endswith(".json"):
             fname += ".json"
         with open(fname, "w") as f:
-            json.dump(self.bm_dict, f)
+            json.dump(self.bm_dict, f, indent=2)
         self.info(f"Saved bookmarks to {fname}")
 
 
