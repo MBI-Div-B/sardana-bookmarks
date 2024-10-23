@@ -273,4 +273,5 @@ class bm_backupfile(_bm):
             fname = fname if fname.endswith("json") else fname + ".json"
             self.autosavefile = fname
             self.bm_dict.update(autosavefile=fname)
+            self.write_to_env()
         self.output(f"Automatic backup file: {self.autosavefile}")
